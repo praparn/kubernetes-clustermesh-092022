@@ -1,0 +1,35 @@
+apiVersion: v1
+kind: Service
+metadata:
+  name: webtest
+  annotations:
+    io.cilium/global-service: 'true'
+    # Possible values:
+    # - local
+    #    preferred endpoints from local cluster if available
+    # - remote
+    #    preferred endpoints from remote cluster if available
+    # none (default)
+    #    no preference. Default behavior if this annotation does not exist
+    io.cilium/service-affinity: 'local'
+  labels:
+    name: web
+    owner: Praparn_L
+    version: "1.0"
+    module: WebServer
+    environment: development
+spec:
+  selector:
+    name: web
+    owner: Praparn_L
+    version: "1.0"
+    module: WebServer
+    environment: development
+
+  type: NodePort
+  ports:
+   - port: 5000
+     name: http
+     targetPort: 5000
+     protocol: TCP
+     nodePort: 32500
