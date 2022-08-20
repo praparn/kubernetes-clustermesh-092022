@@ -26,10 +26,9 @@ spec:
     module: WebServer
     environment: development
 
-  type: NodePort
+  type: ClusterIP
   ports:
    - port: 5000
      name: http
      targetPort: 5000
      protocol: TCP
-     nodePort: 32500

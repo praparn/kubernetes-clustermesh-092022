@@ -1,4 +1,7 @@
-Instruction for Workshop Setup K8S Multiple Cluster in RealWorld:
+
+
+
+Instruction for Workshop Deploy Application across cluster:
 Note: This instruction will start lab for kubernetes's cluster for real workshop:
 
 1. (Master Node) Install prerequiste software for operate:
@@ -99,7 +102,7 @@ You can now join any number of control-plane nodes by copying certificate author
 and service account keys on each node and then running the following as root:
 
   kubeadm join 10.0.1.67:6443 --token 1ogaw7.1dx1qg34qzi6ha5t \
-	--discovery-token-ca-cert-hash sha256:XXXXXX\
+	--discovery-token-ca-cert-hash sha256:XXXXXX \
 	--control-plane 
 
 Then you can join any number of worker nodes by running the following on each as root:
@@ -236,8 +239,78 @@ UDP  ip-10-96-0-10.ap-southeast-1 rr
     cilium clustermesh status --context <context cluster1> --wait
     cilium connectivity test --context <context cluster1> --multi-cluster <context cluster2>
 
-23. (Master Cluster1) 
+23. (Worker1 Cluster1) Join worker node as member of cluster
+(run export environment)
+cd ~
+curl https://raw.githubusercontent.com/praparn/sourcesetup/master/kubernetes_initial/version124/kubeadm-join-worker.yaml > ~/kubeadm-join-worker.yaml
+sed -i -e "s/hostnamelb/$HostnameMaster1/g" ~/kubeadm-join-worker.yaml
+sed -i -e "s/token: tokenid/token: $tokenid/g" ~/kubeadm-join-worker.yaml
+sed -i -e "s/sha256:cahash/$cacerhash/g" ~/kubeadm-join-worker.yaml
+sed -i -e "s/name: hostname/name: $HostnameWorker1/g" ~/kubeadm-join-worker.yaml
+more ~/kubeadm-join-worker.yaml
 
-22. (Master Cluster1 & Master Cluster2) Install cert-manager for kubernetes:
-    kubectl apply -f https://github.com/jetstack/cert-manager/releases/download/v1.7.1/cert-manager.yaml
-    watch kubectl get all -n=cert-manager
+24. (Worker1 Cluster1) join cluster by command:
+sudo su -
+kubeadm join --config /home/ubuntu/kubeadm-join-worker.yaml
+exit
+htop
+
+25. (Worker2 Cluster1) Join worker node as member of cluster
+(run export environment)
+cd ~
+curl https://raw.githubusercontent.com/praparn/sourcesetup/master/kubernetes_initial/version124/kubeadm-join-worker.yaml > ~/kubeadm-join-worker.yaml
+sed -i -e "s/hostnamelb/$HostnameMaster1/g" ~/kubeadm-join-worker.yaml
+sed -i -e "s/token: tokenid/token: $tokenid/g" ~/kubeadm-join-worker.yaml
+sed -i -e "s/sha256:cahash/$cacerhash/g" ~/kubeadm-join-worker.yaml
+sed -i -e "s/name: hostname/name: $HostnameWorker2/g" ~/kubeadm-join-worker.yaml
+more ~/kubeadm-join-worker.yaml
+
+26. (Worker2 Cluster1) join cluster by command:
+sudo su -
+kubeadm join --config /home/ubuntu/kubeadm-join-worker.yaml
+exit
+htop
+
+27. (Worker1 Cluster2) Join worker node as member of cluster
+(run export environment)
+cd ~
+curl https://raw.githubusercontent.com/praparn/sourcesetup/master/kubernetes_initial/version124/kubeadm-join-worker.yaml > ~/kubeadm-join-worker.yaml
+sed -i -e "s/hostnamelb/$HostnameMaster1/g" ~/kubeadm-join-worker.yaml
+sed -i -e "s/token: tokenid/token: $tokenid/g" ~/kubeadm-join-worker.yaml
+sed -i -e "s/sha256:cahash/$cacerhash/g" ~/kubeadm-join-worker.yaml
+sed -i -e "s/name: hostname/name: $HostnameWorker1/g" ~/kubeadm-join-worker.yaml
+more ~/kubeadm-join-worker.yaml
+
+28. (Worker1 Cluster2) join cluster by command:
+sudo su -
+kubeadm join --config /home/ubuntu/kubeadm-join-worker.yaml
+exit
+htop
+
+29. (Worker2 Cluster2) Join worker node as member of cluster
+(run export environment)
+cd ~
+curl https://raw.githubusercontent.com/praparn/sourcesetup/master/kubernetes_initial/version124/kubeadm-join-worker.yaml > ~/kubeadm-join-worker.yaml
+sed -i -e "s/hostnamelb/$HostnameMaster1/g" ~/kubeadm-join-worker.yaml
+sed -i -e "s/token: tokenid/token: $tokenid/g" ~/kubeadm-join-worker.yaml
+sed -i -e "s/sha256:cahash/$cacerhash/g" ~/kubeadm-join-worker.yaml
+sed -i -e "s/name: hostname/name: $HostnameWorker2/g" ~/kubeadm-join-worker.yaml
+more ~/kubeadm-join-worker.yaml
+
+30. (Worker2 Cluster2) join cluster by command:
+sudo su -
+kubeadm join --config /home/ubuntu/kubeadm-join-worker.yaml
+exit
+htop
+
+22. (Master Cluster1 & Master Cluster2) lable worker node with command:
+(run export environment)
+kubectl label nodes $HostnameWorker1 node-role.kubernetes.io/worker=
+kubectl label nodes $HostnameWorker2 node-role.kubernetes.io/worker=
+kubectl get nodes
+
+23. (Master Cluster1 & Master Cluster2) Check status of :
+(run export environment)
+kubectl label nodes $HostnameWorker1 node-role.kubernetes.io/worker=
+kubectl label nodes $HostnameWorker2 node-role.kubernetes.io/worker=
+kubectl get nodes

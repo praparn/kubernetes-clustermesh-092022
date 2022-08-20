@@ -1,0 +1,22 @@
+apiVersion: "v1"
+kind: Pod
+metadata:
+  name: curltest
+  labels:
+    name: curltest
+    owner: Praparn_L
+    version: "1.0"
+    module: curltest
+    environment: development
+spec:
+  containers:
+    - name: curltest
+      image: labdocker/busybox:lastest
+      command: ["sh"]
+  tolerations:
+  - key: "dedicated"
+    operator: "Equal"
+    value: "admin"
+    effect: "NoSchedule"
+  nodeSelector:
+    node-role.kubernetes.io/control-plane: ""
