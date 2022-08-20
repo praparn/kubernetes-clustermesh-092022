@@ -23,6 +23,7 @@ Note: This instruction will start lab for kubernetes's cluster for real workshop
 
 6. (Master Cluster1) Test curl by pods curltest:
     kubectl exec -it curltest bash
+    apk add curl
     curl http://webtest:5000
 
 7. (Master Cluster2) Deploy curltest pods for cluster 2 (This pods will have toralation for run on master node1)

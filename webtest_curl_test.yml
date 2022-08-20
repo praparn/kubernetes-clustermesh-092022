@@ -11,8 +11,7 @@ metadata:
 spec:
   containers:
     - name: curltest
-      image: labdocker/busybox:latest
-      command: ["sh"]
+      image: labdocker/nginx:http2
   tolerations:
   - key: "dedicated"
     operator: "Equal"
