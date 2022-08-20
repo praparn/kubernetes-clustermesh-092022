@@ -22,16 +22,16 @@ Note: This instruction will start lab for kubernetes's cluster for real workshop
     kubectl apply -f https://raw.githubusercontent.com/praparn/kubernetes-clustermesh-092022/main/webtest_curl_test.yml
 
 6. (Master Cluster1) Test curl by pods curltest:
-    kubectl exec -it curltest
+    kubectl exec -it curltest bash
     curl http://webtest:5000
 
 7. (Master Cluster2) Deploy curltest pods for cluster 2 (This pods will have toralation for run on master node1)
     kubectl apply -f https://raw.githubusercontent.com/praparn/kubernetes-clustermesh-092022/main/webtest_curl_test.yml
 
 8. (Master Cluster2) Test curl by pods curltest:
-    kubectl exec -it curltest
+    kubectl exec -it curltest bash
     curl http://webtest:5000
-    
+
 
 6. (Local) Open new terminal and Start loop test access cluster1 and veriy response time in curl:
 	 (Terminal 1):
