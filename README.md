@@ -4,9 +4,9 @@
     <img src="img/logo.png" alt="Logo" width="600" height="200">
   </a>
 -->
-<h3 align="left">GitHub Action for Any XKS</h3>
+<h3 align="left">Kubernetes Cluster Mesh 2022</h3>
   <p align="left">
-     This repository is backgroud to leverage feature of github action and terraform technology for manage in lifecycle of Kubernetes on cloud platform and minimize effort to all contributed for operate Kubernetes cluster (Any XKS). And will continute update
+     This repository is backgroud to leverage feature of cilium and cluster mesh capability to handle application ha in extreme level and across cluster
    </p>
 </div>
 
