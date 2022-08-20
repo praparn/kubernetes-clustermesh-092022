@@ -22,149 +22,67 @@ Note: This instruction will start lab for kubernetes's cluster for real workshop
     kubectl apply -f https://raw.githubusercontent.com/praparn/kubernetes-clustermesh-092022/main/webtest_curl_test.yml
 
 6. (Master Cluster1) Test curl by pods curltest:
-    kubectl exec -it curltest bash
+    kubectl exec -it curltest sh
     apk add curl
     curl http://webtest:5000
 
-7. (Master Cluster2) Deploy curltest pods for cluster 2 (This pods will have toralation for run on master node1)
+7. (Master Cluster1) Start loop test access via curltest pods and veriy response time in curl:
+    kubectl exec -it curltest sh
+    while true; sleep 1; do curl http://webtest:5000; done
+
+8. (Master Cluster1) Open new terminal for check affinity on cilium by command:
+    kubectl get svc ==> record service ip address
+    kubectl get pods -n=kube-system | grep cilium       ==> record name
+    kubectl exec -it <cilium pods name> bash -n=kube-system
+        "cilium service list --clustermesh-affinity"    ==> check match with service ip address
+
+9. (Worker1 Cluster1 & Worker2 Cluster1) Reboot worker 1 and worker 2:
+    sudo shutdown -r now
+
+10. (Master Cluster1) Monitor result via curltest and cilium command for hand over (Cluster1 -> Cluster 2)
+     (curltest)
+        while true; sleep 1; do curl http://webtest:5000; done
+     
+     (cilium pods)
+        cilium service list --clustermesh-affinity
+
+11. (Master Cluster2) Deploy curltest pods for cluster 2 (This pods will have toralation for run on master node2)
     kubectl apply -f https://raw.githubusercontent.com/praparn/kubernetes-clustermesh-092022/main/webtest_curl_test.yml
 
-8. (Master Cluster2) Test curl by pods curltest:
-    kubectl exec -it curltest bash
+12. (Master Cluster2) Test curl by pods curltest:
+    kubectl exec -it curltest sh
+    apk add curl
     curl http://webtest:5000
 
+13. (Master Cluster2) Start loop test access via curltest pods and veriy response time in curl:
+    kubectl exec -it curltest sh
+    while true; sleep 1; do curl http://webtest:5000; done
 
-6. (Local) Open new terminal and Start loop test access cluster1 and veriy response time in curl:
-	 (Terminal 1):
-        while true; sleep 1; do curl -o /dev/null -s -w 'Total: %{time_total}s\n'  http://<public ip master cluster1>:32500; done
-     (Terminal 2):
-        while true; sleep 1; do curl http://<public ip master cluster1>:32500; done
-        
-7. (Worker1 Cluster1 & Worker1 Cluster1) Shutdown worker 1 and worker 2:
-    sudo shutdown -h now
+14. (Master Cluster2) Open new terminal for check affinity on cilium by command:
+    kubectl get svc ==> record service ip address
+    kubectl get pods -n=kube-system | grep cilium       ==> record name
+    kubectl exec -it <cilium pods name> bash -n=kube-system
+        "cilium service list --clustermesh-affinity"    ==> check match with service ip address
 
-8. (Local) Monitor result 
+15. (Worker1 Cluster2 & Worker2 Cluster2) Reboot worker 1 and worker 2:
+    sudo shutdown -r now
 
-8 (Master Cluster1) Check IPVS policy by ipvsadm
-	sudo ipvsadm
-	-------------------------------------------------
-	Example Result:
-	-------------------------------------------------
-IP Virtual Server version 1.2.1 (size=4096)
-Prot LocalAddress:Port Scheduler Flags
-  -> RemoteAddress:Port           Forward Weight ActiveConn InActConn
-TCP  ip-10-96-0-1.ap-southeast-1. rr
-  -> ip-10-0-1-191.ap-southeast-1 Masq    1      0          6         
-TCP  ip-10-96-0-10.ap-southeast-1 rr
-TCP  ip-10-96-0-10.ap-southeast-1 rr
-UDP  ip-10-96-0-10.ap-southeast-1 rr
-	-------------------------------------------------
+16. (Master Cluster2) Monitor result via curltest and cilium command for hand over (Cluster1 -> Cluster 2)
+     (curltest)
+        while true; sleep 1; do curl http://webtest:5000; done
+     
+     (cilium pods)
+        cilium service list --clustermesh-affinity
 
-
-9. (Master Cluster2) Prepare configuration for initial kubernetes master
-    (run export environment)
-	cd ~
-	curl https://raw.githubusercontent.com/praparn/sourcesetup/master/kubernetes_initial/version124/kubeadm-init.yaml > ~/kubeadm-init.yaml
-  	sed -i -e "s/2.2.2.2/$HostnameMaster1/g" ~/kubeadm-init.yaml
-  	sed -i -e "s/hostnamemaster/$HostnameMaster1/g" ~/kubeadm-init.yaml
-  	sed -i -e "s/KubernetesClusterName/$ClusterName/g" ~/kubeadm-init.yaml
-  	more ~/kubeadm-init.yaml
-
-10. (Master Cluster2) initial cluster by command:
-	sudo su -
-	kubeadm init --config /home/ubuntu/kubeadm-init.yaml
-	exit
-
-	*Remark: Need to record token Output
-    -------------------------------------------------
-    Token output:
-    -------------------------------------------------
-
-You can now join any number of control-plane nodes by copying certificate authorities
-and service account keys on each node and then running the following as root:
-
-  kubeadm join 10.0.1.67:6443 --token 1ogaw7.1dx1qg34qzi6ha5t \
-	--discovery-token-ca-cert-hash sha256:XXXXXX \
-	--control-plane 
-
-Then you can join any number of worker nodes by running the following on each as root:
-
-kubeadm join 10.0.1.67:6443 --token 1ogaw7.1dx1qg34qzi6ha5t \
-	--discovery-token-ca-cert-hash sha256:XXXXXX 
-	-------------------------------------------------
-
-11. (Master Cluster2) Setup run cluster system by command (Regular User):
-	mkdir -p $HOME/.kube
-  	sudo cp -i /etc/kubernetes/admin.conf $HOME/.kube/config
-	sudo chown $(id -u):$(id -g) $HOME/.kube/config
-	kubectl taint nodes --all node-role.kubernetes.io/master-
-    cp .kube/config /home/ubuntu/kubeconfig_cluster2
-
-12. (Master Cluster2) Check IPVS mode on kube-proxy by command:
-    kubectl get pods -n kube-system
-    kubectl logs kube-proxy-<XXXX> -n kube-system
-
-13. (Master Cluster2) Check IPVS policy by ipvsadm
-	sudo ipvsadm
-	-------------------------------------------------
-	Example Result:
-	-------------------------------------------------
-IP Virtual Server version 1.2.1 (size=4096)
-Prot LocalAddress:Port Scheduler Flags
-  -> RemoteAddress:Port           Forward Weight ActiveConn InActConn
-TCP  ip-10-96-0-1.ap-southeast-1. rr
-  -> ip-10-0-1-191.ap-southeast-1 Masq    1      0          6         
-TCP  ip-10-96-0-10.ap-southeast-1 rr
-TCP  ip-10-96-0-10.ap-southeast-1 rr
-UDP  ip-10-96-0-10.ap-southeast-1 rr
-	-------------------------------------------------
-14. (Local) Config file kubeconfig for context of $CLUSTER1 and $CLUSTER2
-    scp -i "<key file>" ubuntu@<Public IP Cluster1>:/home/ubuntu/kubeconfig_cluster1 ./kubeconfig_cluster1
-    scp -i "<key file>" ubuntu@<Public IP Cluster2>:/home/ubuntu/kubeconfig_cluster2 ./kubeconfig_cluster2
-    Setup context for cluster1/cluster2 ==> ./kubeconfig_clustermesh
-    scp -i "<key file>" ./kubeconfig_clustermesh ubuntu@<Public IP Cluster1>:/home/ubuntu/kubeconfig_clustermesh 
-    scp -i "<key file>" ./kubeconfig_clustermesh ubuntu@<Public IP Cluster2>:/home/ubuntu/kubeconfig_clustermesh 
-
-15. (Master Cluster1) copy kubeconfig and backup
-    cd /home/ubuntu/
-    cp .kube/config .kube/config_backup
-    cp kubeconfig_clustermesh .kube/config
-
-16. (Master Cluster2) copy kubeconfig and backup
-    cd /home/ubuntu/
-    cp .kube/config .kube/config_backup
-    cp kubeconfig_clustermesh .kube/config
-
-17. (Master Cluster1) Install cilium network with plugin by command:
-    cilium install --cluster-name <cluster1 name> --cluster-id 1
+17. (Master Cluster1) Delete application and service for cluster 1
+    kubectl delete -f https://raw.githubusercontent.com/praparn/kubernetes-clustermesh-092022/main/webtest_deploy_cluster1.yml
+    kubectl delete -f https://raw.githubusercontent.com/praparn/kubernetes-clustermesh-092022/main/webtest_svc_cluster1.yml
+    kubectl delete -f https://raw.githubusercontent.com/praparn/kubernetes-clustermesh-092022/main/webtest_curl_test.yml
+    kubectl taint nodes <Master Name> dedicated-
 
 
-18. (Master Cluster2) Install cilium network with plugin by command:
-    cilium install --cluster-name <cluster2 name> --cluster-id 2 --context <context cluster2> --inherit-ca <context cluster1>
-    
-
-19. (Master Cluster1 & Master Cluster2) Verify get pods of kube-system
-    kubectl get pods -n=kube-system
-    cilium status
-
-20. (Master Cluster1) Enable cilium cluster
-    cilium clustermesh enable --context <context cluster1> --service-type NodePort
-    cilium clustermesh enable --context <context cluster2> --service-type NodePort
-
-21. (Master Cluster1 & Master Cluster2) Verify get pods of kube-system
-    kubectl get pods -n=kube-system
-    cilium status
-    cilium clustermesh status --context <context cluster1>  --wait
-    cilium clustermesh status --context <context cluster2>  --wait
-
-22. (Master Cluster1) Test connection between cluster via command: 
-    cilium clustermesh connect --context <context cluster1> --destination-context <context cluster2>
-    cilium clustermesh status --context <context cluster1> --wait
-    cilium connectivity test --context <context cluster1> --multi-cluster <context cluster2>
-
-23. (Master Cluster1) 
-
-22. (Master Cluster1 & Master Cluster2) Install cert-manager for kubernetes:
-    kubectl apply -f https://github.com/jetstack/cert-manager/releases/download/v1.7.1/cert-manager.yaml
-    watch kubectl get all -n=cert-manager
-
+18. (Master Cluster2) Delete application and service for cluster 2
+    kubectl delete -f https://raw.githubusercontent.com/praparn/kubernetes-clustermesh-092022/main/webtest_deploy_cluster2.yml
+    kubectl delete -f https://raw.githubusercontent.com/praparn/kubernetes-clustermesh-092022/main/webtest_svc_cluster2.yml
+    kubectl delete -f https://raw.githubusercontent.com/praparn/kubernetes-clustermesh-092022/main/webtest_curl_test.yml
+    kubectl taint nodes <Master Name> dedicated-
